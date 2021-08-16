@@ -17,6 +17,8 @@ public class GameManager2 : MonoBehaviour
     private GameObject[] cardClone;
     // Sprite list
     [SerializeField] private Sprite[] CardSprite;
+    // For card position calculation
+    private float PosResult;
 
     // Question
     private char[] wordList;
@@ -24,22 +26,39 @@ public class GameManager2 : MonoBehaviour
     [SerializeField] private GameObject gameImage;
     private int correctCount;
 
-    // For calculation
-    private float PosResult;
+    // Timer
+    private float countDownTime;
+    [SerializeField] private Text timerText;
+
+    // Menu
+    [SerializeField] private MenuController menuController;
+
+    // Game Over
+    private bool GameIsOver;
+    // Panel Game Over
+    [SerializeField] private GameObject finishPanel;
+    [SerializeField] private Text finishText;
+    [SerializeField] private Text scoreText;
+    [SerializeField] private GameObject restartButton;
+    [SerializeField] private GameObject returnButton;
 
     // Game data
-    private GameData theData;
+    private GameData wordData = new GameData();
+    private SaveData saveData;
 
-    // Ui
-    [SerializeField] private GameObject finishPanel;
+    // Score
+    [HideInInspector] public static float finalScore;
+    private int pickUpCardCount = 0;
 
     private void Start()
     {
         // Set UI
         finishPanel.SetActive(false);
 
-        // Load Game Data
-        theData = new GameData();
+        // Load Save Game Data
+        saveData = SaveGame.LoadData();
+        countDownTime = saveData.GetTimerData(saveData.GetTimeOrder());
+        GameManager.ChangeTimeUI(countDownTime, timerText);
 
         // Change Image
         gameImage.GetComponent<Image>().sprite = questImage;
@@ -54,10 +73,16 @@ public class GameManager2 : MonoBehaviour
         // Calculate card position and spawn it
         InstantiateCards();
 
+        // Start BGM
+        FindObjectOfType<AudioManager>().Play("BGM");
+
         // Count the correct answer
         correctCount = 0;
-    }
 
+        // Google Ads
+        AdsManager.instance.RequestInterstitial();
+        AdsManager.instance.DeleteBanner();
+    }
 
     private void Update()
     {
@@ -69,6 +94,26 @@ public class GameManager2 : MonoBehaviour
             // Move object
             selectedObject.transform.position = new Vector2(pos.x , pos.y);
         }
+
+        // Timer
+        CoolDownTime();
+    }
+
+    private void CoolDownTime()
+    {
+        if (countDownTime >= 0 && GameIsOver == false)
+        {
+            // Calculate count down time
+            countDownTime -= Time.deltaTime;
+            // Set UI
+            GameManager.ChangeTimeUI(countDownTime, timerText);
+        }
+        // If times up
+        else if (countDownTime <= 0 && GameIsOver == false)
+        {
+            // Player lose
+            GameOver(false);
+        }
     }
 
     private void InstantiateCards()
@@ -78,8 +123,8 @@ public class GameManager2 : MonoBehaviour
         Vector2 maxPosCamera = Camera.main.ScreenToWorldPoint(new Vector2(Camera.main.pixelWidth, Camera.main.pixelHeight));
         // Calculate division x
         float divX;
-        // Just for better position
-        if (wordList.Length <= 3)
+        // Just for better x position
+        if (wordList.Length <= 5)
         {
             divX = (maxPosCamera.x - minPosCamera.x) / (wordList.Length + 4);
             PosResult = minPosCamera.x + (divX * 2.5f);
@@ -94,6 +139,7 @@ public class GameManager2 : MonoBehaviour
             divX = (maxPosCamera.x - minPosCamera.x) / (wordList.Length);
             PosResult = minPosCamera.x + (divX * 0.5f);
         }
+        // Calculate division y
         float divY = (maxPosCamera.y - minPosCamera.y) / 4;
 
         // Spawn card
@@ -104,9 +150,9 @@ public class GameManager2 : MonoBehaviour
             PosResult += divX;
             NormalCard cardManager = cardList[i].GetComponent<NormalCard>();
             // Change sprite and id
-            for(int k = 0; k < theData.GetAlpha().Length; k++)
+            for(int k = 0; k < wordData.GetAlpha().Length; k++)
             {
-                if (wordList[i] == theData.GetDetailAlpha(k))
+                if (wordList[i] == wordData.GetDetailAlpha(k))
                 {
                     cardManager.SetCardId(k, CardSprite[k]);
                 }
@@ -139,16 +185,19 @@ public class GameManager2 : MonoBehaviour
             cardList[rand].transform.position = temp;
         }
     }
-
     public void SetSelectedObject(GameObject theObject)
     {
         if (selectedObject == null && theObject.GetComponent<NormalCard>().isLocked() == false)
         {
+            // Set selected object
             selectedObject = theObject;
             selected = true;
             // Save object start position
             selectedCard = selectedObject.GetComponent<NormalCard>();
             Vector2 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            // Increase pick up count
+            pickUpCardCount++;
         }
     }
     public void DeselectObject()
@@ -175,23 +224,123 @@ public class GameManager2 : MonoBehaviour
         if(correctCount == wordList.Length)
         {
             // Game is over
-            GameOver();
+            GameOver(true);
         }
     }
 
-    private void GameOver()
+    private void GameOver(bool isWin)
     {
-        // Add save game or some ui here
+        // Can't open menu window
+        menuController.SetCanOpenMenu(false);
+        // Set menu is active
+        menuController.SetMenuIsActive(true);
 
-        // SFX Finish
-        FindObjectOfType<AudioManager>().Play("Finish");
+        // Set Game over
+        GameIsOver = true;
 
-        // Open finish panel after few second
-        StartCoroutine(HoldLoad());
+        // Stop BGM
+        FindObjectOfType<AudioManager>().Stop("BGM");
+
+        // If player win
+        if (isWin == true)
+        {
+            // Calculate score
+            CalculateScore();
+            // Save Game
+            SaveNewGame();
+            // Load win panel
+            StartCoroutine(WinLoad());
+        }
+        // If player lose
+        else
+        {
+            // Load lose panel
+            StartCoroutine(LoseLoad());
+
+            // Hide score
+            scoreText.text = "";
+        }
     }
-    private IEnumerator HoldLoad()
+    private IEnumerator WinLoad()
     {
+        // SFX win
+        FindObjectOfType<AudioManager>().Play("Win");
+
+        // Hold few second
         yield return new WaitForSeconds(1.5f);
+
+        // Set UI
         finishPanel.SetActive(true);
+        finishText.text = "YOU ARE GREAT !";
+        restartButton.SetActive(false);
+        returnButton.SetActive(true);
+
+        // Ads
+        int rand = Random.Range(0, 4); 
+        if (rand == 0)
+        {
+            AdsManager.instance.ShowInterstitial();
+        }
+        else if(rand == 1)
+        {
+            AdsManager.instance.ShowRewarded();
+        }
+    }
+    private IEnumerator LoseLoad()
+    {
+        // SFX win
+        FindObjectOfType<AudioManager>().Play("Lose");
+
+        // Hold few second
+        yield return new WaitForSeconds(1.3f);
+
+        // Set UI
+        finishPanel.SetActive(true);
+        finishText.text = "DON'T GIVE UP !";
+        restartButton.SetActive(true);
+        returnButton.SetActive(false);
+
+        // Ads
+        AdsManager.instance.ShowInterstitial();
+    }
+
+    private void CalculateScore()
+    {
+        float totalScore = 0;
+
+        // Time
+        totalScore += (saveData.GetTimerDataLength() - saveData.GetTimeOrder()) * 85;
+        totalScore += countDownTime;
+
+        // Pick up count
+        if(GameManager.itemWord.Length * 2.5f > pickUpCardCount)
+        {
+            totalScore += (GameManager.itemWord.Length * 2.5f - pickUpCardCount) * 15;
+        }
+
+        finalScore += totalScore;
+
+        // Set UI score
+        scoreText.text = "Your Score : " + (int)finalScore;
+    }
+
+    private void SaveNewGame()
+    {
+        // Get Level
+        int level = GameManager.SelectedItem - 1;
+        // Set highest Score
+        if (saveData.GetHighScoreLevelData(level) < finalScore)
+        {
+            saveData.SetHighScoreLevelData(level, (int)finalScore);
+        }
+
+        // Open new level
+        if(level != saveData.GetLevelIsLockedDataLength() - 1)
+        {
+            saveData.SetLevelIsLockedData(level + 1, false);
+        }
+
+        // Save Game
+        SaveGame.SaveProgress(saveData);
     }
 }

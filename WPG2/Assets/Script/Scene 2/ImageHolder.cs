@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class ImageHolder : MonoBehaviour
 {
-    [SerializeField] private Sprite[] Animal;
     [SerializeField] private Sprite[] Clothes;
     [SerializeField] private Sprite[] Fruit;
     [SerializeField] private Sprite[] Furniture;
@@ -17,24 +16,21 @@ public class ImageHolder : MonoBehaviour
         switch (kind)
         {
             case 1:
-                return Animal[value];
-                break;
-            case 2:
                 return Clothes[value];
                 break;
-            case 3:
+            case 2:
                 return Fruit[value];
                 break;
-            case 4:
+            case 3:
                 return Furniture[value];
                 break;
-            case 5:
+            case 4:
                 return KitchenSet[value];
                 break;
-            case 6:
+            case 5:
                 return Stationary[value];
                 break;
-            case 7:
+            case 6:
                 return Vegetable[value];
                 break;
             default:

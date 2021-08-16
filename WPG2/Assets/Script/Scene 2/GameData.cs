@@ -1,7 +1,8 @@
-﻿
+﻿// Contain Game Words Data
+// And Get method
+// Can't be change
 public class GameData
-{
-    private string[] animal = new string[] { "BEAVER", "CHICKEN", "CHICKS", "COW", "DOG", "DONKEY", "DUCK", "ELEPHANT", "LION", "MONKEY", "PENGUIN", "PIG", "SEALS", "ZEBRA" };
+{ 
     private string[] clothes = new string[] { "DRESS", "EYEGLASSES", "HAT", "SHIRT", "SHOES", "SKIRT", "SOCKS", "SUIT", "TIE", "TSHIRT" };
     private string[] fruit = new string[] { "APPLE", "BANANA", "COCONUT", "DRAGONFRUIT", "GRAPE", "LEMON", "LONGAN", "LYCHEE", "MANGO", "MANGOSTEEN", "MELON", "ORANGE", "PAPAYA", "PEAR", "STARFRUIT", "TOMATO", "WATERMELON" };
     private string[] furniture = new string[] { "CANDLE", "CHAIR", "CUPBOARD", "DESK", "DOOR", "FAN", "LAMP", "MATTRESS", "PIPE", "REFIGERATOR", "SOFA", "VASE", "WINDOW" };
@@ -19,14 +20,6 @@ public class GameData
         return alpha[a];
     }
 
-    public string GetAnimal(int a)
-    {
-        return animal[a];
-    }
-    public int GetAnimalLength()
-    {
-        return animal.Length;
-    }
     public string GetClothes(int a)
     {
         return clothes[a];

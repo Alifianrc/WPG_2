@@ -15,7 +15,7 @@ public class NormalCard : MonoBehaviour
     // If this card is for placing
     private bool canBePlaced;
     // Distance limit
-    private float DistanceLimit = 0.5f;
+    private float DistanceLimit = 0.7f;
 
     private void Start()
     {

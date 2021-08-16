@@ -40,9 +40,9 @@ PlayerSettings:
     width: 1
     height: 1
   m_SplashScreenLogos:
-  - logo: {fileID: 21300000, guid: 760014a3f1572494198ca5ddc95f40a4, type: 3}
-    duration: 2
   - logo: {fileID: 21300000, guid: 2806f26b686b84b458ac8d8c02ed00a7, type: 3}
+    duration: 2
+  - logo: {fileID: 21300000, guid: 44da904c874f1c849b33bfed3978c3f7, type: 3}
     duration: 2
   m_VirtualRealitySplashScreen: {fileID: 2800000, guid: 2806f26b686b84b458ac8d8c02ed00a7,
     type: 3}
@@ -129,7 +129,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.1
+  bundleVersion: 1.0
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -176,7 +176,7 @@ PlayerSettings:
     Standalone: com.Company.ProductName
   buildNumber: {}
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 19
+  AndroidMinSdkVersion: 21
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 
@@ -250,7 +250,7 @@ PlayerSettings:
   clonedFromGUID: 5f34be1353de5cf4398729fda238591b
   templatePackageId: com.unity.template.2d@1.0.2
   templateDefaultScene: Assets/Scenes/SampleScene.unity
-  AndroidTargetArchitectures: 5
+  AndroidTargetArchitectures: 1
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 2800000, guid: 2806f26b686b84b458ac8d8c02ed00a7, type: 3}
   AndroidKeystoreName: '{inproject}: '
@@ -259,13 +259,13 @@ PlayerSettings:
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
   AndroidEnableTango: 0
-  androidEnableBanner: 0
+  androidEnableBanner: 1
   androidUseLowAccuracyLocation: 0
   androidUseCustomKeystore: 0
   m_AndroidBanners:
   - width: 320
     height: 180
-    banner: {fileID: 0}
+    banner: {fileID: 2800000, guid: 4171f50b59edd884aa24737b98c341e7, type: 3}
   androidGamepadSupportLevel: 0
   AndroidValidateAppBundleSize: 1
   AndroidAppBundleSizeToValidate: 150
@@ -281,7 +281,7 @@ PlayerSettings:
   - m_BuildTarget: Android
     m_Icons:
     - m_Textures:
-      - {fileID: 0}
+      - {fileID: 2800000, guid: 2806f26b686b84b458ac8d8c02ed00a7, type: 3}
       m_Width: 192
       m_Height: 192
       m_Kind: 0
@@ -317,7 +317,7 @@ PlayerSettings:
       m_Kind: 0
       m_SubKind: 
     - m_Textures:
-      - {fileID: 0}
+      - {fileID: 2800000, guid: 2806f26b686b84b458ac8d8c02ed00a7, type: 3}
       m_Width: 192
       m_Height: 192
       m_Kind: 1
@@ -352,7 +352,9 @@ PlayerSettings:
       m_Height: 36
       m_Kind: 1
       m_SubKind: 
-    - m_Textures: []
+    - m_Textures:
+      - {fileID: 2800000, guid: 84cc757beb61c4043b6c60effe49b942, type: 3}
+      - {fileID: 2800000, guid: 87401bfc6570f87479f5a2c1a10e3e2f, type: 3}
       m_Width: 432
       m_Height: 432
       m_Kind: 2
@@ -735,7 +737,7 @@ PlayerSettings:
       daydreamIconBackground: {fileID: 0}
   cloudServicesEnabled:
     Build: 1
-    Collab: 1
+    Collab: 0
     ErrorHub: 0
     Hub: 0
     UNet: 1

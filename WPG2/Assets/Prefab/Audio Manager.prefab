@@ -50,7 +50,7 @@ MonoBehaviour:
     pitch: 1
     loop: 1
     source: {fileID: 0}
-  - name: Finish
+  - name: Win
     clip: {fileID: 8300000, guid: 763c5d95b5685984fab11a3925b3128d, type: 3}
     volume: 0.6
     pitch: 1
@@ -65,6 +65,12 @@ MonoBehaviour:
   - name: CardPlaced
     clip: {fileID: 8300000, guid: 124da74f87958b34481149dea68e1489, type: 3}
     volume: 0.9
+    pitch: 1
+    loop: 0
+    source: {fileID: 0}
+  - name: Lose
+    clip: {fileID: 8300000, guid: c1fecdeedd865bf4fabb412ddcee82ce, type: 3}
+    volume: 0.7
     pitch: 1
     loop: 0
     source: {fileID: 0}

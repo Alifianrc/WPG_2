@@ -15,7 +15,7 @@ public class AudioManager : MonoBehaviour
 
 	void Awake()
 	{
-		// So the song will continue
+		// So the song will continue (singleton pattern)
 		if (instance != null)
 		{
 			Destroy(gameObject);
@@ -34,12 +34,6 @@ public class AudioManager : MonoBehaviour
 			s.source.loop = s.loop;
 			s.source.playOnAwake = false;
 		}
-	}
-
-	private void Start()
-	{
-		// Play BGM in start
-		Play("BGM");
 	}
 
 	public void CheckUI()
@@ -113,8 +107,16 @@ public class AudioManager : MonoBehaviour
 			s.source.volume = s.volume;
 			s.source.pitch = s.pitch;
 			
-			// Play the sound
-			s.source.Play();
+			// Check the sound and Play
+			if(sound == "BGM" && !s.source.isPlaying)
+            {
+				s.source.Play();
+            }
+            else
+            {
+				s.source.Play();
+			}
+			
 		}
 	}
 

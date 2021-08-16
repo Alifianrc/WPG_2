@@ -6,10 +6,10 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     // Card Positioning
-    public const int gridX = 6;
-    public const int gridY = 3;
-    public const float offSetX = 1.5f;
-    public const float offSetY = 2.2f;
+    private const int gridX = 6;
+    private const int gridY = 3;
+    private const float offSetX = 1.5f;
+    private const float offSetY = 2.2f;
 
     // Original card (prefab)
     [SerializeField] private MainCard originalCard;
@@ -17,13 +17,17 @@ public class GameManager : MonoBehaviour
     private MainCard[] revealed;
     // Card sprite list
     [SerializeField] private Sprite[] word;
-    // Start position
+    // Card start position
     [SerializeField] private Transform startCardPos;
     // Menu Controller
     [SerializeField] private MenuController menu;
 
     // Bomb count 
-    private int BombCount = 4;
+    private int BombCount;
+    // Timer
+    private float CountDownTime;
+    // Timer UI
+    [SerializeField] private Text timerText;
 
     // For game randomize
     private char[] alpha2;
@@ -34,13 +38,12 @@ public class GameManager : MonoBehaviour
     // Item kind selected
     public static int SelectedItem;
     /// <summary>
-    /// 1. Animal
-    /// 2. Clothes
-    /// 3. Fruit
-    /// 4. Furniture
-    /// 5. KitchenSet
-    /// 6. Stationary
-    /// 7. Vegetable
+    /// 1. Clothes
+    /// 2. Fruit
+    /// 3. Furniture
+    /// 4. KitchenSet
+    /// 5. Stationary
+    /// 6. Vegetable
     /// </summary>
 
     // Image
@@ -48,40 +51,75 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject image;
 
     // Game Data
-    private GameData theData;
+    private GameData wordData = new GameData();
+    private SaveData saveData;
 
     // For check card
     private bool waitFunction = false;
     private int cardFound = 0;
     private int score = 0;
-    private float cardFlipHoldTime = 0.7f;
+    private float cardFlipHoldTime = 0.5f;
     [SerializeField] private Text scoreLabel;
     private string ScoreText = "Letter Found : ";
 
+    // Game Over
+    private bool GameIsOver;
+    // Panel if game is over
     [SerializeField] private GameObject FinishPanel;
+    [SerializeField] private Text finishText;
+    [SerializeField] private GameObject nextButton;
+    [SerializeField] private GameObject restartButton;
+    [SerializeField] private GameObject returnButton;
+
+    // For Menu
+    [SerializeField] private MenuController menuController;
 
     // Start is called before the first frame update
     void Start()
     {
+        // Set Game Over
+        GameIsOver = false;
+
+        // Close panel
         FinishPanel.SetActive(false);
-        // Load game data
-        theData = new GameData();
+
+        // Load Data
+        saveData = SaveGame.LoadData();
+        BombCount = saveData.GetBombCount();
+        CountDownTime = saveData.GetTimerData(saveData.GetTimeOrder());
+
+        // Change Ui
+        ChangeTimeUI(CountDownTime, timerText);
+
         // Randomize card
         RandomizeCard();
+
         // Set UI
         scoreLabel.text = ScoreText + score + "/" + itemWord.Length;
         image.GetComponent<Image>().sprite = imageHolder.GetSprite(SelectedItem, itemRand);
+
         // Send image to next level
         GameManager2.questImage = imageHolder.GetSprite(SelectedItem, itemRand);
+
+        // Google Ads
+        AdsManager.instance.RequestBannerBottom();
+        AdsManager.instance.RequestInterstitial();
     }
 
+    private void Update()
+    {
+        // Count down time
+        CoolDownTime();
+    }
+
+    // Method for randomize card
     private void RandomizeCard()
     {
         // Get alphabet data
-        alpha2 = new char[theData.GetAlpha().Length];
+        alpha2 = new char[wordData.GetAlpha().Length];
         for (int i = 0; i < alpha2.Length; i++)
         {
-            alpha2[i] = theData.GetDetailAlpha(i);
+            alpha2[i] = wordData.GetDetailAlpha(i);
         }
 
         // Take random item
@@ -161,9 +199,9 @@ public class GameManager : MonoBehaviour
                 int id = 0;// Temporary id
                 int wordNumber = 0;// Serial number
 
-                for (int k = 0; k < theData.GetAlpha().Length; k++)
+                for (int k = 0; k < wordData.GetAlpha().Length; k++)
                 {
-                    if (alpha3[alphaLoop] == theData.GetDetailAlpha(k))
+                    if (alpha3[alphaLoop] == wordData.GetDetailAlpha(k))
                     {
                         wordNumber = k;
                         for (int l = 0; l < itemWord.Length; l++)
@@ -208,35 +246,32 @@ public class GameManager : MonoBehaviour
         switch (SelectedItem)
         {
             case 1:
-                itemRand = Random.Range(0, theData.GetAnimalLength());
-                itemWord = theData.GetAnimal(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetClothesLength());
+                itemWord = wordData.GetClothes(itemRand).ToCharArray();
                 break;
             case 2:
-                itemRand = Random.Range(0, theData.GetClothesLength());
-                itemWord = theData.GetClothes(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetFruitLength());
+                itemWord = wordData.GetFruit(itemRand).ToCharArray();
                 break;
             case 3:
-                itemRand = Random.Range(0, theData.GetFruitLength());
-                itemWord = theData.GetFruit(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetFurnitureLength());
+                itemWord = wordData.GetFurniture(itemRand).ToCharArray();
                 break;
             case 4:
-                itemRand = Random.Range(0, theData.GetFurnitureLength());
-                itemWord = theData.GetFurniture(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetKitchenSetLength());
+                itemWord = wordData.GetKitchenSet(itemRand).ToCharArray();
                 break;
             case 5:
-                itemRand = Random.Range(0, theData.GetKitchenSetLength());
-                itemWord = theData.GetKitchenSet(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetStationaryLength());
+                itemWord = wordData.GetStationary(itemRand).ToCharArray();
                 break;
             case 6:
-                itemRand = Random.Range(0, theData.GetStationaryLength());
-                itemWord = theData.GetStationary(itemRand).ToCharArray();
-                break;
-            case 7:
-                itemRand = Random.Range(0, theData.GetVegetableLength());
-                itemWord = theData.GetVegetable(itemRand).ToCharArray();
+                itemRand = Random.Range(0, wordData.GetVegetableLength());
+                itemWord = wordData.GetVegetable(itemRand).ToCharArray();
                 break;
             default:
-
+                itemRand = Random.Range(0, wordData.GetFruitLength());
+                itemWord = wordData.GetFruit(itemRand).ToCharArray();
                 break;
         }
     }
@@ -252,7 +287,7 @@ public class GameManager : MonoBehaviour
     }
     public bool MenuIsActive()
     {
-        return menu.GetMenuIsActive();
+        return menuController.GetMenuIsActive();
     }
     public void CardReveald(MainCard card)
     {
@@ -311,25 +346,145 @@ public class GameManager : MonoBehaviour
         }
 
         // If all corrct card revealed
-        if(score == itemWord.Length)
+        if(score == itemWord.Length && GameIsOver == false)
         {
-            GameOver();
+            // Player win
+            GameOver(true);
         }
     }
 
-    private void GameOver()
+    // Timer method
+    private void CoolDownTime()
     {
-        // Add save game or some ui here
-
-        // SFX Finish
-        FindObjectOfType<AudioManager>().Play("Finish");
-
-        // Open finish panel after few second
-        StartCoroutine(HoldLoad());
+        if(CountDownTime >= 0 && GameIsOver == false)
+        {
+            // Calculate count down time
+            CountDownTime -= Time.deltaTime;
+            // Set UI
+            ChangeTimeUI(CountDownTime, timerText);
+        }
+        // If times up
+        else if(CountDownTime <= 0 && GameIsOver == false)
+        {
+            // Player lose
+            GameOver(false); 
+        }
     }
-    private IEnumerator HoldLoad()
+
+    // Make it static so it can used in other script
+    public static void ChangeTimeUI(float theTime, Text theText)
     {
+        if (theTime <= 0)
+        {
+            theText.text = "00:00";
+        }
+        else
+        {
+            float minutes = Mathf.Floor(theTime / 60);
+            float seconds = Mathf.RoundToInt(theTime % 60);
+            string min, sec;
+            if (minutes < 10)
+            {
+                min = "0" + minutes.ToString();
+            }
+            else
+            {
+                min = minutes.ToString();
+            }
+            if (seconds < 10)
+            {
+                sec = "0" + Mathf.RoundToInt(seconds).ToString();
+            }
+            else
+            {
+                sec = Mathf.RoundToInt(seconds).ToString();
+            }
+
+            theText.text = min + ":" + sec;
+        }       
+    }
+
+    // Game Over Method
+    private void GameOver(bool isWin)
+    {
+        // Can't open menu window
+        menuController.SetCanOpenMenu(false);
+        // Set menu is active
+        menuController.SetMenuIsActive(true);
+
+        // Set Game over
+        GameIsOver = true;
+
+        // Stop BGM
+        FindObjectOfType<AudioManager>().Stop("BGM");
+
+        // If player win
+        if (isWin == true)
+        {
+            // Calculate score
+            CalculateScore();
+            // Load win panel
+            StartCoroutine(WinLoad());
+        }
+        // If player lose
+        else
+        {
+            // Load lose panel
+            StartCoroutine(LoseLoad());
+        }
+    }
+    private IEnumerator WinLoad()
+    {
+        // SFX win
+        FindObjectOfType<AudioManager>().Play("Win");
+
+        // Hold few second
         yield return new WaitForSeconds(1.5f);
+
+        // Set UI
         FinishPanel.SetActive(true);
+        nextButton.SetActive(true);
+        restartButton.SetActive(false);
+        returnButton.SetActive(false);
+
+        finishText.text = "WELL DONE !";
+
+        // Ads
+        AdsManager.instance.ShowInterstitialRandom(5);
+    }
+    private IEnumerator LoseLoad()
+    {
+        // SFX lose
+        FindObjectOfType<AudioManager>().Play("Lose");
+
+        // Hold few second
+        yield return new WaitForSeconds(1.3f);
+
+        // Set UI
+        FinishPanel.SetActive(true);
+        nextButton.SetActive(false);
+        restartButton.SetActive(true);
+        returnButton.SetActive(true);
+
+        finishText.text = "TRY AGAIN ?";
+
+        // Ads
+        AdsManager.instance.ShowInterstitial();
+    }
+    private void CalculateScore()
+    {
+        float totalScore = 0;
+
+        // Number of bomb
+        totalScore += BombCount * 35;
+
+        // Time
+        totalScore += (saveData.GetTimerDataLength() - saveData.GetTimeOrder()) * 85;
+        totalScore += CountDownTime;
+
+        // Number of letters
+        totalScore += itemWord.Length * 15;
+
+        GameManager2.finalScore = totalScore;
     }
 }

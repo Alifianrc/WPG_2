@@ -1,2 +1,2 @@
-# WPG-_2
-Wonder_Words_Project
+# Sepay
+Wonder_W_Project
